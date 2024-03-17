@@ -13,15 +13,22 @@ class Database:
         
         client = MongoClient(CONNECTION_STRING)
         self.collection = client.database.days
+    
+    def get_day(self, date: datetime | None):
+        date_to_get = date if date else datetime.now(tz=timezone.utc)
+        date_to_get = date_to_get.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        result = self.collection.find_one({ "day": date_to_get })
+        return result
 
     def insert_day(self, date: datetime | None):
-        today_date = date if date else datetime.now(tz=timezone.utc)
-        today_date = today_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        date_to_add = date if date else datetime.now(tz=timezone.utc)
+        date_to_add = date_to_add.replace(hour=0, minute=0, second=0, microsecond=0)
 
-        result = self.collection.find_one({ "day": today_date })
+        result = self.collection.find_one({ "day": date_to_add })
         if result is not None:
             return result.get("_id")
 
         return self.collection.insert_one({
-            "day": today_date
+            "day": date_to_add
         }).inserted_id
