@@ -1,0 +1,19 @@
+version: '3'
+services:
+  mongo:
+    image: mongo:latest
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=user
+      - MONGO_INITDB_ROOT_PASSWORD=password
+  mongoku:
+    image: huggingface/mongoku:latest
+    ports:
+      - 3100:3100
+    depends_on:
+      - mongo
+    restart: always
+    environment:
+      MONGOKU_DEFAULT_HOST: mongodb://user:password@mongo:27017

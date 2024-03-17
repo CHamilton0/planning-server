@@ -1,4 +1,4 @@
-FROM python:3.11-buster as builder
+FROM python:3.10-buster as builder
 
 RUN pip install poetry==1.8.2
 
@@ -14,7 +14,7 @@ RUN touch README.md
 
 RUN poetry install --only main --no-root
 
-FROM python:3.11-slim-buster as runtime
+FROM python:3.10-slim-buster as runtime
 
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
@@ -23,4 +23,4 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 COPY planning_server ./planning_server
 
-ENTRYPOINT ["python", "-m", "planning_server.main"]
+ENTRYPOINT ["uvicorn", "planning_server.main:app", "--reload"]
