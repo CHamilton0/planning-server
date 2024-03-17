@@ -26,17 +26,29 @@ class Query:
 
         return day_result
     
+@strawberry.input
+class Item:
+    name: str
+    hours: int
+    
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    def add_day(self, day: datetime | None) -> str:
-        print(day)
-        return database.insert_day(day)
+    def add_day(
+        self,
+        day: datetime,
+        items: list[Item],
+    ) -> str:
+        data: dict[str, int] = {}
+
+        for item in items:
+            data[item.name] = item.hours
+
+        return database.insert_day(day, data)
 
 schema = strawberry.Schema(Query, Mutation)
 
 graphql_app = GraphQLRouter(schema)
-
 
 app = FastAPI()
 app.include_router(graphql_app, prefix="/graphql")
