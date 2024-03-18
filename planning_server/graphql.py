@@ -24,7 +24,7 @@ class Query:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    def add_day(
+    async def add_day(
         self,
         info: Info[Context, None],
         day: datetime,
@@ -35,18 +35,25 @@ class Mutation:
         for item in items:
             data[item.name] = item.hours
 
+        for day_subscription in info.context.day_subscriptions:
+            await day_subscription.put(day)
+
         return info.context.database.insert_day(day, data)
     
 @strawberry.type
 class Subscription:
     @strawberry.subscription
-    async def subscribe_day(self, day: datetime) -> AsyncGenerator[Day, None]:
+    async def subscribe_day(
+        self,
+        info: Info[Context, None],
+        day: datetime,
+    ) -> AsyncGenerator[Day, None]:
         queue: Queue = Queue()
-        # add susbscription to context
+        info.context.day_subscriptions.add(queue)
         try:
             while True:
                 result: Day = await queue.get()
                 yield result
         finally:
-            # remove susbscription from context
+            info.context.day_subscriptions.remove(queue)
             pass
