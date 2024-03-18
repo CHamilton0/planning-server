@@ -10,7 +10,7 @@ python = "^3.10"
 strawberry-graphql = {extras = ["debug-server"], version = "^0.220.0"}
 fastapi = "^0.110.0"
 pymongo = "^4.6.2"
-uvicorn = "^0.28.0"
+uvicorn = {extras = ["standard"], version = "^0.28.0"}
 
 
 [build-system]
