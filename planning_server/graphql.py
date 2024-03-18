@@ -5,18 +5,7 @@ from typing import AsyncGenerator
 
 from strawberry.types import Info
 from planning_server.context import Context
-
-@strawberry.type
-class Day:
-    day: datetime
-
-    def __init__(self, day: datetime):
-        self.day = day
-
-@strawberry.input
-class Item:
-    name: str
-    hours: int
+from planning_server.types import Day, Item
 
 @strawberry.type
 class Query:
@@ -31,7 +20,7 @@ class Query:
         day_result = Day(result.get("day"))
 
         return day_result
-    
+
 @strawberry.type
 class Mutation:
     @strawberry.mutation

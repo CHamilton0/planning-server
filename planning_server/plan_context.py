@@ -3,10 +3,10 @@ from typing import Set
 
 from planning_server.db import Database
 from planning_server.context import Context
-from planning_server.graphql import Day
+from planning_server.types import Day
 
 
-class CommentContext:
+class PlanContext:
     _database: Database
     _day_subscriptions: Set['asyncio.Queue[Day]']
 

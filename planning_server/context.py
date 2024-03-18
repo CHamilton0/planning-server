@@ -4,7 +4,7 @@ from typing import Set
 from strawberry.fastapi import BaseContext
 
 from planning_server.db import Database
-from planning_server.graphql import Day
+from planning_server.types import Day
 
 class Context (BaseContext):
     database: Database
