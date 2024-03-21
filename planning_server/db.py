@@ -32,24 +32,15 @@ class Database:
         date_to_add = date_to_add.replace(
             hour=0, minute=0, second=0, microsecond=0)
 
-        result = self.collection.find_one({"day": date_to_add})
-        if result is not None:
-            for field in data:
-                number_to_add = data[field]
-                if field in result:
-                    result[field] = result[field] + number_to_add
-                else:
-                    result[field] = number_to_add
-
-            self.collection.replace_one({"day": date_to_add}, result)
-
-            return Day.from_dict(result)
-
-        result = {"day": date_to_add}
+        result: dict[str, datetime | int] | None = self.collection.find_one({"day": date_to_add})
+        result = result if result is not None else {"day": date_to_add}
         for field in data:
-            number_to_add = data[field]
+            result[field] = data[field]
 
-        self.collection.insert_one(result).inserted_id
+        if result is not None:
+            self.collection.replace_one({"day": date_to_add}, result)
+        else:
+            self.collection.insert_one(result).inserted_id
         return Day.from_dict(result)
 
     def remove_item_from_day(self, date: datetime | None, item: str) -> Day:
