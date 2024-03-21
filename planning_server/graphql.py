@@ -19,6 +19,15 @@ class Query:
         result: Day = info.context.database.get_day(day)
 
         return result
+    
+    @strawberry.field
+    def goals(
+        self,
+        info: Info[Context, None],
+    ) -> list[Item]:
+        result: list[Item] = info.context.database.get_goal_times()
+
+        return result
 
 
 @strawberry.type
@@ -98,4 +107,20 @@ class Subscription:
                     yield result
         finally:
             info.context.day_subscriptions.remove(queue)
+            pass
+
+    @strawberry.subscription
+    async def subscribe_goals(
+        self,
+        info: Info[Context, None],
+    ) -> AsyncGenerator[list[Item], None]:
+        queue: Queue = Queue()
+        info.context.goal_subscriptions.add(queue)
+
+        try:
+            while True:
+                result: list[Item] = await queue.get()
+                yield result
+        finally:
+            info.context.goal_subscriptions.remove(queue)
             pass

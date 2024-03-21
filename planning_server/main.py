@@ -1,27 +1,50 @@
-from datetime import datetime
-import asyncio
-from typing import AsyncGenerator
-from asyncio import Queue
 
-import strawberry
-
-from fastapi import FastAPI
-from strawberry.fastapi import GraphQLRouter
-
+import typer
 from planning_server.db import Database
-from planning_server.graphql import Query, Mutation, Subscription
-from planning_server.plan_context import PlanContext
+from planning_server.graphql_service import GraphqlService
 
-database: Database = Database()
+app = typer.Typer(add_completion=False)
 
-schema = strawberry.Schema(Query, Mutation, Subscription)
 
-context = PlanContext(database=database)
+@app.command(context_settings={'terminal_width': 120})
+def run(
+    http_host: str = typer.Option(
+        'localhost',
+        envvar='HTTP_HOST',
+        help="""HTTP host for the server"""
+    ),
+    http_port: int = typer.Option(
+        8000,
+        envvar='HTTP_PORT',
+        help="""HTTP port for the server"""
+    ),
+    mongo_host: str = typer.Option(
+        'localhost',
+        envvar='MONGO_HOST',
+        help="""HTTP host for MongoDB"""
+    ),
+    mongo_port: int = typer.Option(
+        27017,
+        envvar='MONGO_PORT',
+        help="""HTTP port for MongoDB"""
+    ),
+    mongo_user: str = typer.Option(
+        'user',
+        envvar='MONGO_USER',
+        help="""User for MongoDB"""
+    ),
+    mongo_password: str = typer.Option(
+        'password',
+        envvar='MONGO_PASSWORD',
+        help="""Password for MongoDB"""
+    ),
+):
+    database: Database = Database(
+        db_host=mongo_host,
+        db_port=mongo_port,
+        db_user=mongo_user,
+        db_password=mongo_password,
+    )
 
-graphql_app: GraphQLRouter = GraphQLRouter(
-    schema,
-    context_getter=context.get_context
-)
-
-app = FastAPI()
-app.include_router(graphql_app, prefix="/graphql")
+    graphql_service = GraphqlService(http_host, http_port, database)
+    graphql_service.run_service()

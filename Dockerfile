@@ -23,4 +23,4 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 COPY planning_server ./planning_server
 
-ENTRYPOINT ["uvicorn", "planning_server.main:app", "--reload"]
+ENTRYPOINT [ "python3", "-m" ,"planning_server" ]

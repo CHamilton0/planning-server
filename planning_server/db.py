@@ -11,10 +11,16 @@ class Database:
     days_collection: Collection
     goals_collection: Collection
 
-    def __init__(self):
-        CONNECTION_STRING = "mongodb://user:password@localhost:27017"
+    def __init__(
+        self,
+        db_user: str,
+        db_password: str,
+        db_host: str,
+        db_port: int,
+    ):
+        CONNECTION_STRING = f'mongodb://{db_user}:{db_password}@{db_host}:{db_port}'
 
-        client = MongoClient(CONNECTION_STRING)
+        client: MongoClient = MongoClient(CONNECTION_STRING)
         self.days_collection = client.database.days
         self.goals_collection = client.database.goals
 
@@ -28,8 +34,16 @@ class Database:
         return items
 
     def get_goal_times(self) -> list[Item]:
+        items_dict: dict[str, int] | None = self.goals_collection.find_one({})
+        if items_dict is None:
+            return []
+        assert isinstance(items_dict, dict)
 
-        return []
+        items: list[Item] = []
+        for (name, hours) in items_dict.items():
+            items.append(Item(name, hours))
+
+        return items
 
     def get_day(self, date: datetime | None) -> Day:
         date_to_get = date if date else datetime.now(tz=timezone.utc)
@@ -47,7 +61,8 @@ class Database:
         date_to_add = date_to_add.replace(
             hour=0, minute=0, second=0, microsecond=0)
 
-        result: dict[str, datetime | int] | None = self.days_collection.find_one({"day": date_to_add})
+        result: dict[str, datetime | int] | None = self.days_collection.find_one({
+                                                                                 "day": date_to_add})
         result = result if result is not None else {"day": date_to_add}
         for field in data:
             result[field] = data[field]
