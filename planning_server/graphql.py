@@ -5,7 +5,8 @@ from typing import AsyncGenerator
 
 from strawberry.types import Info
 from planning_server.context import Context
-from planning_server.types import Day, Item
+from planning_server.types import Day, ItemInput
+
 
 @strawberry.type
 class Query:
@@ -15,45 +16,69 @@ class Query:
         info: Info[Context, None],
         day: datetime | None,
     ) -> Day:
-        result = info.context.database.get_day(day)
+        result: Day = info.context.database.get_day(day)
 
-        day_result = Day(result.get("day"))
+        return result
 
-        return day_result
 
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    async def add_day(
+    async def set_day_items(
         self,
         info: Info[Context, None],
-        day: datetime,
-        items: list[Item],
-    ) -> str:
+        day: datetime | None,
+        items: list[ItemInput],
+    ) -> Day:
         data: dict[str, int] = {}
 
         for item in items:
             data[item.name] = item.hours
 
-        for day_subscription in info.context.day_subscriptions:
-            await day_subscription.put(day)
+        day_with_items: Day = info.context.database.set_items_in_day(day, data)
 
-        return info.context.database.insert_day(day, data)
-    
+        for day_subscription in info.context.day_subscriptions:
+            await day_subscription.put(day_with_items)
+
+        return day_with_items
+
+    @strawberry.mutation
+    async def remove_item_from_day(
+        self,
+        info: Info[Context, None],
+        day: datetime | None,
+        item: str,
+    ) -> Day:
+        day_with_removed_item: Day = info.context.database.remove_item_from_day(
+            day, item)
+
+        for day_subscription in info.context.day_subscriptions:
+            await day_subscription.put(day_with_removed_item)
+
+        return day_with_removed_item
+
+
 @strawberry.type
 class Subscription:
     @strawberry.subscription
     async def subscribe_day(
         self,
         info: Info[Context, None],
-        day: datetime,
+        day: datetime | None,
     ) -> AsyncGenerator[Day, None]:
         queue: Queue = Queue()
         info.context.day_subscriptions.add(queue)
+
+        if day is None:
+            day = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+
         try:
             while True:
                 result: Day = await queue.get()
-                yield result
+
+                if (result.day.replace(hour=0, minute=0, second=0, microsecond=0).timestamp() ==
+                        day.replace(hour=0, minute=0, second=0, microsecond=0).timestamp()):
+                    yield result
         finally:
             info.context.day_subscriptions.remove(queue)
             pass

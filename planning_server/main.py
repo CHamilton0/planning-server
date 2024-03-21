@@ -12,13 +12,13 @@ from planning_server.db import Database
 from planning_server.graphql import Query, Mutation, Subscription
 from planning_server.plan_context import PlanContext
 
-database = Database()
+database: Database = Database()
 
 schema = strawberry.Schema(Query, Mutation, Subscription)
 
 context = PlanContext(database=database)
 
-graphql_app = GraphQLRouter(
+graphql_app: GraphQLRouter = GraphQLRouter(
     schema,
     context_getter=context.get_context
 )
