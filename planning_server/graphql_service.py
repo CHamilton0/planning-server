@@ -10,6 +10,7 @@ from typing import AsyncGenerator
 from asyncio import Queue
 import uvicorn
 
+fast_api: FastAPI = FastAPI()
 
 class GraphqlService:
     http_host: str
@@ -31,14 +32,14 @@ class GraphqlService:
             context_getter=self.context.get_context
         )
 
-        self.app = FastAPI()
-        self.app.include_router(self.graphql_app, prefix="/graphql")
+        fast_api.include_router(self.graphql_app, prefix="/graphql")
 
-    def run_service(self) -> None:
+    def run_service(self, reload: bool = False) -> None:
         uvicorn.run(
-            app=self.app,
+            app="planning_server.graphql_service:fast_api",
             host=self.http_host,
             port=self.http_port,
             loop="asyncio",
             lifespan="on",
+            reload=reload,
         )
