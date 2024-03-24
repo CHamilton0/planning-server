@@ -37,11 +37,6 @@ def run(
         'password',
         envvar='MONGO_PASSWORD',
         help="""Password for MongoDB"""
-    ),
-    reload: bool = typer.Option(
-        False,
-        envvar='RELOAD',
-        help="""Indicates if the service should reload on file changes"""
     )
 ):
     database: Database = Database(
@@ -52,4 +47,4 @@ def run(
     )
 
     graphql_service = GraphqlService(http_host, http_port, database)
-    graphql_service.run_service(reload)
+    graphql_service.run_service()

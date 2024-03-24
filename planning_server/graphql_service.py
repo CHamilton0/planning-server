@@ -34,12 +34,11 @@ class GraphqlService:
 
         fast_api.include_router(self.graphql_app, prefix="/graphql")
 
-    def run_service(self, reload: bool = False) -> None:
+    def run_service(self) -> None:
         uvicorn.run(
             app="planning_server.graphql_service:fast_api",
             host=self.http_host,
             port=self.http_port,
             loop="asyncio",
             lifespan="on",
-            reload=reload,
         )
