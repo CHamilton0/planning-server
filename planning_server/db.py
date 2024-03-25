@@ -54,7 +54,8 @@ class Database:
         result = self.days_collection.find_one(day_dict)
         if result is None:
             self.days_collection.insert_one(day_dict)
-        return Day.from_dict(day_dict)
+            return Day.from_dict(day_dict)
+        return Day.from_dict(result)
 
     def set_items_in_day(self, date: datetime | None, data: dict[str, int]) -> Day:
         date_to_add = date if date else datetime.now(tz=timezone.utc)

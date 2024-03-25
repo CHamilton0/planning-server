@@ -9,8 +9,10 @@ import asyncio
 from typing import AsyncGenerator
 from asyncio import Queue
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
 
 fast_api: FastAPI = FastAPI()
+
 
 class GraphqlService:
     http_host: str
@@ -32,6 +34,13 @@ class GraphqlService:
             context_getter=self.context.get_context
         )
 
+        fast_api.add_middleware(
+            CORSMiddleware,
+            allow_headers=["*"],
+            allow_origins=["*"],
+            allow_methods=["*"],
+            allow_credentials=True,
+        )
         fast_api.include_router(self.graphql_app, prefix="/graphql")
 
     def run_service(self) -> None:
