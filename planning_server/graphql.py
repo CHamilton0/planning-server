@@ -37,11 +37,12 @@ class Query:
     ) -> list[Summary]:
         goals: list[Goal] = info.context.database.get_goal_times()
         
-        date_to_get = day if day else datetime.now()
+        date_to_get = day if day else datetime.now(timezone=timezone.utc)
         date_to_get = date_to_get.replace(
             hour=0, minute=0, second=0, microsecond=0)
         
-        week = [date_to_get + timedelta(days=x) for x in range(0, -7, -1)]        
+        week = [date_to_get + timedelta(days=x) for x in range(0, -7, -1)]
+
         days: list[Day] = [info.context.database.get_day(weekday) for weekday in week]
         
         summaries: list[Summary] = []
