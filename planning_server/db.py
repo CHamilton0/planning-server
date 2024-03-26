@@ -41,6 +41,9 @@ class Database:
 
         items: list[Item] = []
         for (name, hours) in items_dict.items():
+            # Skip the document ID field
+            if name == '_id':
+                continue
             items.append(Item(name, hours))
 
         return items
@@ -62,9 +65,7 @@ class Database:
         date_to_add = date_to_add.replace(
             hour=0, minute=0, second=0, microsecond=0)
 
-        result: dict[str, datetime | int] | None = self.days_collection.find_one({
-                                                                                 "day": date_to_add})
-        result = result if result is not None else {"day": date_to_add}
+        result = {"day": date_to_add}
         for field in data:
             result[field] = data[field]
 
