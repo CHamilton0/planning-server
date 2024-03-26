@@ -5,7 +5,7 @@ from typing import AsyncGenerator
 
 from strawberry.types import Info
 from planning_server.context import Context
-from planning_server.types import Day, ItemInput, Item
+from planning_server.types import Day, ItemInput, Item, GoalInput, Goal
 
 
 @strawberry.type
@@ -24,8 +24,8 @@ class Query:
     def goals(
         self,
         info: Info[Context, None],
-    ) -> list[Item]:
-        result: list[Item] = info.context.database.get_goal_times()
+    ) -> list[Goal]:
+        result: list[Goal] = info.context.database.get_goal_times()
 
         return result
 
@@ -70,13 +70,18 @@ class Mutation:
     async def set_goals(
         self,
         info: Info[Context, None],
-        items: list[ItemInput],
-    ) -> list[Item]:
-        items_dict = {}
+        items: list[GoalInput],
+    ) -> list[Goal]:
+        items_list: list[dict[str, str | int]] = []
         for item in items:
-            items_dict[item.name] = item.hours
-
-        return_items = info.context.database.set_goal_times(items_dict)
+            items_dict = {}
+            items_dict["name"] = item.name
+            items_dict["min_hours"] = item.min_hours
+            items_dict["max_hours"] = item.max_hours
+            
+            items_list.append(items_dict)
+        
+        return_items = info.context.database.set_goal_times(items_list)
 
         for goal_subscription in info.context.goal_subscriptions:
             await goal_subscription.put(return_items)

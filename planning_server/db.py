@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from pymongo import MongoClient
 from pymongo.collection import Collection
 
-from planning_server.types import Day, Item
+from planning_server.types import Day, Item, Goal
 
 
 class Database:
@@ -24,29 +24,36 @@ class Database:
         self.days_collection = client.database.days
         self.goals_collection = client.database.goals
 
-    def set_goal_times(self, data: dict[str, int]) -> list[Item]:
-        self.goals_collection.update_one({}, {'$set': data}, upsert=True)
+    def set_goal_times(self, data: list[dict[str, str | int]]) -> list[Goal]:
+        self.goals_collection.update_one({}, {'$set': {"goals": data}}, upsert=True)
 
-        items: list[Item] = []
-        for (name, hours) in data.items():
-            items.append(Item(name, hours))
+        goals: list[Goal] = []
+        for item_dict in data:
+            name = item_dict.get("name")
+            min_hours = item_dict.get("min_hours")
+            max_hours = item_dict.get("max_hours", None)
+            
+            goals.append(Goal(name, min_hours, max_hours))
 
-        return items
+        return goals
 
-    def get_goal_times(self) -> list[Item]:
-        items_dict: dict[str, int] | None = self.goals_collection.find_one({})
-        if items_dict is None:
+    def get_goal_times(self) -> list[Goal]:
+        goals_dict: dict | None = self.goals_collection.find_one({})
+        if goals_dict is None:
             return []
-        assert isinstance(items_dict, dict)
+        assert isinstance(goals_dict, dict)
+        goals_list: list[dict[str, str | int]] = goals_dict.get("goals", [])
+        assert isinstance(goals_list, list)
 
-        items: list[Item] = []
-        for (name, hours) in items_dict.items():
-            # Skip the document ID field
-            if name == '_id':
-                continue
-            items.append(Item(name, hours))
+        goals: list[Goal] = []
+        for item_dict in goals_list:
+            name = item_dict.get("name")
+            min_hours = item_dict.get("min_hours")
+            max_hours = item_dict.get("max_hours", None)
+            
+            goals.append(Goal(name, min_hours, max_hours))
 
-        return items
+        return goals
 
     def get_day(self, date: datetime | None) -> Day:
         date_to_get = date if date else datetime.now(tz=timezone.utc)
