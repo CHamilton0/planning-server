@@ -1,11 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import strawberry
 from asyncio import Queue
 from typing import AsyncGenerator
 
 from strawberry.types import Info
 from planning_server.context import Context
-from planning_server.types import Day, ItemInput, Item, GoalInput, Goal
+from planning_server.types import Day, ItemInput, Item, GoalInput, Goal, Summary
 
 
 @strawberry.type
@@ -28,6 +28,39 @@ class Query:
         result: list[Goal] = info.context.database.get_goal_times()
 
         return result
+    
+    @strawberry.field
+    def weekly_summary(
+        self,
+        info: Info[Context, None],
+        day: datetime | None,
+    ) -> list[Summary]:
+        goals: list[Goal] = info.context.database.get_goal_times()
+        
+        date_to_get = day if day else datetime.now()
+        date_to_get = date_to_get.replace(
+            hour=0, minute=0, second=0, microsecond=0)
+        
+        week = [date_to_get + timedelta(days=x) for x in range(0, -7, -1)]        
+        days: list[Day] = [info.context.database.get_day(weekday) for weekday in week]
+        
+        summaries: list[Summary] = []
+        for goal in goals:
+            name = goal.name
+            min_hours = goal.min_hours
+            max_hours = goal.max_hours
+            
+            hours_done = 0
+            for day_data in days:
+                hours_this_day = next((item for item in day_data.items if item.name == name), None)           
+                if hours_this_day is None:
+                    continue
+                
+                hours_done += hours_this_day.hours
+
+            summaries.append(Summary(name, hours_done, min_hours, max_hours))
+        
+        return summaries
 
 
 @strawberry.type

@@ -23,6 +23,19 @@ class Goal:
         self.name = name
         self.min_hours = min_hours
         self.max_hours = max_hours
+        
+@strawberry.type
+class Summary:
+    name: str
+    hours_done: int
+    min_hours: int
+    max_hours: int | None
+    
+    def __init__(self, name: str, hours_done: int, min_hours: int, max_hours: int | None = None):
+        self.name = name
+        self.hours_done = hours_done
+        self.min_hours = min_hours
+        self.max_hours = max_hours
 
 @strawberry.type
 class Day:
