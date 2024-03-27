@@ -7,19 +7,19 @@ import strawberry
 @strawberry.type
 class Item:
     name: str
-    hours: int
+    hours: float
 
-    def __init__(self, name: str, hours: int):
+    def __init__(self, name: str, hours: float):
         self.name = name
         self.hours = hours
 
 @strawberry.type
 class Goal:
     name: str
-    min_hours: int
-    max_hours: int | None
+    min_hours: float
+    max_hours: float | None
 
-    def __init__(self, name: str, min_hours: int, max_hours: int | None = None):
+    def __init__(self, name: str, min_hours: float, max_hours: float | None = None):
         self.name = name
         self.min_hours = min_hours
         self.max_hours = max_hours
@@ -27,11 +27,11 @@ class Goal:
 @strawberry.type
 class Summary:
     name: str
-    hours_done: int
-    min_hours: int
-    max_hours: int | None
+    hours_done: float
+    min_hours: float
+    max_hours: float | None
     
-    def __init__(self, name: str, hours_done: int, min_hours: int, max_hours: int | None = None):
+    def __init__(self, name: str, hours_done: float, min_hours: float, max_hours: float | None = None):
         self.name = name
         self.hours_done = hours_done
         self.min_hours = min_hours
@@ -47,7 +47,7 @@ class Day:
         self.items = items
 
     @staticmethod
-    def from_dict(dictionary: dict[str, datetime | int]) -> Day:
+    def from_dict(dictionary: dict[str, datetime | float]) -> Day:
         date = dictionary.get('day')
         assert isinstance(date, datetime)
         items: list[Item] = []
@@ -55,7 +55,7 @@ class Day:
             if key == 'day' or key == '_id':
                 continue
             value = dictionary[key]
-            assert isinstance(value, int)
+            assert isinstance(value, float)
             items.append(Item(key, value))
 
         return Day(date, items)
@@ -64,10 +64,10 @@ class Day:
 @strawberry.input
 class ItemInput:
     name: str
-    hours: int
+    hours: float
     
 @strawberry.input
 class GoalInput:
     name: str
-    min_hours: int
-    max_hours: int | None
+    min_hours: float
+    max_hours: float | None

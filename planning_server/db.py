@@ -24,7 +24,7 @@ class Database:
         self.days_collection = client.database.days
         self.goals_collection = client.database.goals
 
-    def set_goal_times(self, data: list[dict[str, str | int]]) -> list[Goal]:
+    def set_goal_times(self, data: list[dict[str, str | float]]) -> list[Goal]:
         self.goals_collection.update_one({}, {'$set': {"goals": data}}, upsert=True)
 
         goals: list[Goal] = []
@@ -42,7 +42,7 @@ class Database:
         if goals_dict is None:
             return []
         assert isinstance(goals_dict, dict)
-        goals_list: list[dict[str, str | int]] = goals_dict.get("goals", [])
+        goals_list: list[dict[str, str | float]] = goals_dict.get("goals", [])
         assert isinstance(goals_list, list)
 
         goals: list[Goal] = []
@@ -60,14 +60,14 @@ class Database:
         date_to_get = date_to_get.replace(
             hour=0, minute=0, second=0, microsecond=0)
 
-        day_dict: dict[str, datetime | int] = {"day": date_to_get}
+        day_dict: dict[str, datetime | float] = {"day": date_to_get}
         result = self.days_collection.find_one(day_dict)
         if result is None:
             self.days_collection.insert_one(day_dict)
             return Day.from_dict(day_dict)
         return Day.from_dict(result)
 
-    def set_items_in_day(self, date: datetime | None, data: dict[str, int]) -> Day:
+    def set_items_in_day(self, date: datetime | None, data: dict[str, float]) -> Day:
         date_to_add = date if date else datetime.now(tz=timezone.utc)
         date_to_add = date_to_add.replace(
             hour=0, minute=0, second=0, microsecond=0)

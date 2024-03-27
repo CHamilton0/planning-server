@@ -73,7 +73,7 @@ class Mutation:
         day: datetime | None,
         items: list[ItemInput],
     ) -> Day:
-        data: dict[str, int] = {}
+        data: dict[str, float] = {}
 
         for item in items:
             data[item.name] = item.hours
@@ -106,7 +106,7 @@ class Mutation:
         info: Info[Context, None],
         items: list[GoalInput],
     ) -> list[Goal]:
-        items_list: list[dict[str, str | int]] = []
+        items_list: list[dict[str, str | float]] = []
         for item in items:
             items_dict = {}
             items_dict["name"] = item.name
