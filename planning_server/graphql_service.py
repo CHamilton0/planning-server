@@ -23,6 +23,7 @@ class GraphqlService:
         http_host: str,
         http_port: int,
         database: Database,
+        development: bool = False,
     ):
         self.http_host = http_host
         self.http_port = http_port
@@ -31,7 +32,8 @@ class GraphqlService:
         self.context = PlanContext(database=database)
         self.graphql_app: GraphQLRouter = GraphQLRouter(
             self.schema,
-            context_getter=self.context.get_context
+            context_getter=self.context.get_context,
+            graphql_ide="graphiql" if development else None,
         )
 
         fast_api.add_middleware(

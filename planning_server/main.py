@@ -37,6 +37,11 @@ def run(
         'password',
         envvar='MONGO_PASSWORD',
         help="""Password for MongoDB"""
+    ),
+    development: bool = typer.Option(
+        False,
+        envvar='DEVELOPMENT',
+        help="""Whether to run the development server"""
     )
 ):
     database: Database = Database(
@@ -46,5 +51,5 @@ def run(
         db_password=mongo_password,
     )
 
-    graphql_service = GraphqlService(http_host, http_port, database)
+    graphql_service = GraphqlService(http_host, http_port, database, development)
     graphql_service.run_service()
