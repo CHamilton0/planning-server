@@ -15,7 +15,7 @@ if [ -e "$version_file" ]; then
     git fetch origin
 
     # Check the Git history for keywords indicating changes
-    if git log --oneline --no-merges $(git tag | tail -n 1)..HEAD | grep -q 'BREAKING CHANGE\|feat\|fix'; then
+    if git log --oneline --no-merges $(git tag | tail -n 1)..HEAD | grep -q 'BREAKING CHANGE\|feat\|fix\|chore'; then
         # At least one of the keywords is found in the Git history
         # Increment the version components
         IFS='.' read -ra version_parts <<< "$current_version"

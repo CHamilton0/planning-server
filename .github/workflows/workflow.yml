@@ -57,7 +57,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ github.repository }}:${{ steps.version.outputs.release_version }}
+          tags: chamilton0:${{ steps.version.outputs.release_version }}
 
       - name: Tag commit
         uses: actions-ecosystem/action-push-tag@v1
