@@ -58,3 +58,8 @@ jobs:
         with:
           push: true
           tags: ${{ github.repository }}:${{ steps.version.outputs.release_version }}
+
+      - name: Tag commit
+        uses: actions-ecosystem/action-push-tag@v1
+        with:
+          tag: v${{ steps.version.outputs.release_version }}
