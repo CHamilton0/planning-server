@@ -29,9 +29,11 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
+      - uses: actions/checkout@v4
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -53,13 +55,31 @@ jobs:
           echo "Extracted version: $version"
           echo "release_version=$version" >> $GITHUB_OUTPUT
 
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: chamilton0:${{ steps.version.outputs.release_version }}
+      - name: Build image
+        run: | 
+          IMAGE_NAME=$(echo $IMAGE_NAME | tr '[A-Z]' '[a-z]')
+          docker build . --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
+      - name: Log in to registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: Push image
+        run: |
+          IMAGE_ID=ghcr.io/$IMAGE_NAME
+
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
+          VERSION=${{ steps.version.outputs.release_version }}
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          IMAGE_NAME=$(echo $IMAGE_NAME | tr '[A-Z]' '[a-z]')
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
 
       - name: Tag commit
-        uses: actions-ecosystem/action-push-tag@v1
-        with:
-          tag: v${{ steps.version.outputs.release_version }}
+        run: |
+          tag=v${{ steps.version.outputs.release_version }}
+          message=${{ steps.version.outputs.release_version }}
+          git config --global user.name 'Version CI'
+          git config --global user.email 'chamilton0@users.noreply.github.com'
+          git tag -a "${tag}" -m "${message}"
+          git push origin "${tag}"
