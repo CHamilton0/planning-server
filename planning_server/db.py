@@ -13,14 +13,9 @@ class Database:
 
     def __init__(
         self,
-        db_user: str,
-        db_password: str,
-        db_host: str,
-        db_port: int,
+        connection_string: str,
     ):
-        CONNECTION_STRING = f'mongodb://{db_user}:{db_password}@{db_host}:{db_port}'
-
-        client: MongoClient = MongoClient(CONNECTION_STRING)
+        client: MongoClient = MongoClient(connection_string)
         self.days_collection = client.database.days
         self.goals_collection = client.database.goals
 
