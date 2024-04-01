@@ -76,6 +76,17 @@ jobs:
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
 
+      - name: Push image with commit SHA
+        run: |
+          IMAGE_ID=ghcr.io/$IMAGE_NAME
+
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
+          VERSION=${{ steps.version.outputs.release_version }}
+          IMAGE_NAME=$(echo $IMAGE_NAME | tr '[A-Z]' '[a-z]')
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION-$(git rev-parse --short HEAD)
+          docker push $IMAGE_ID:$VERSION-$(git rev-parse --short HEAD)
+
       - name: Tag commit
         if: github.ref == 'refs/heads/master'
         run: |
