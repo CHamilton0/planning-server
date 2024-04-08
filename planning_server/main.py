@@ -42,14 +42,15 @@ def run(
         False,
         envvar='DEVELOPMENT',
         help="""Whether to run the development server"""
-    )
+    ),
+    connection_string: str = typer.Option(
+        '',
+        envvar='CONNECTION_STRING',
+        help="""Connection string for MongoDB"""
+    ),
 ):
-    database: Database = Database(
-        db_host=mongo_host,
-        db_port=mongo_port,
-        db_user=mongo_user,
-        db_password=mongo_password,
-    )
+    db_connection_string = connection_string if len(connection_string) > 0 else f'mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}'
+    database: Database = Database(db_connection_string)
 
     graphql_service = GraphqlService(http_host, http_port, database, development)
     graphql_service.run_service()
