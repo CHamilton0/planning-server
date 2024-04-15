@@ -38,7 +38,7 @@ class Query:
     ) -> list[Summary]:
         goals: list[Goal] = info.context.database.get_goal_times()
         
-        date_to_get = day if day else datetime.now(timezone=timezone.utc)
+        date_to_get = day if day else datetime.now(tz=timezone.utc)
         date_to_get = date_to_get.replace(
             hour=0, minute=0, second=0, microsecond=0)
         
@@ -50,14 +50,14 @@ class Query:
         for goal in goals:
             name = goal.name
             min_hours = goal.min_hours * (day_range / 7)
-            max_hours = goal.max_hours * (day_range / 7)
+            max_hours = 0 if goal.max_hours is None else goal.max_hours * (day_range / 7)
             
-            hours_done = 0
+            hours_done: float = 0.0
             for day_data in days:
                 hours_this_day = next((item for item in day_data.items if item.name == name), None)           
                 if hours_this_day is None:
                     continue
-                
+
                 hours_done += hours_this_day.hours
 
             summaries.append(Summary(name, hours_done, min_hours, max_hours))
@@ -109,10 +109,11 @@ class Mutation:
     ) -> list[Goal]:
         items_list: list[dict[str, str | float]] = []
         for item in items:
-            items_dict = {}
+            items_dict: dict[str, str | float] = {}
             items_dict["name"] = item.name
             items_dict["min_hours"] = item.min_hours
-            items_dict["max_hours"] = item.max_hours
+            if item.max_hours is not None:
+                items_dict["max_hours"] = item.max_hours
             
             items_list.append(items_dict)
         
