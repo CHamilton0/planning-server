@@ -30,10 +30,11 @@ class Query:
         return result
     
     @strawberry.field
-    def weekly_summary(
+    def summary(
         self,
         info: Info[Context, None],
         day: datetime | None,
+        day_range: int = 7,  # Number of days to include in summary range
     ) -> list[Summary]:
         goals: list[Goal] = info.context.database.get_goal_times()
         
@@ -41,15 +42,15 @@ class Query:
         date_to_get = date_to_get.replace(
             hour=0, minute=0, second=0, microsecond=0)
         
-        week = [date_to_get + timedelta(days=x) for x in range(0, -7, -1)]
+        week = [date_to_get + timedelta(days=x) for x in range(0, -day_range, -1)]
 
         days: list[Day] = [info.context.database.get_day(weekday) for weekday in week]
         
         summaries: list[Summary] = []
         for goal in goals:
             name = goal.name
-            min_hours = goal.min_hours
-            max_hours = goal.max_hours
+            min_hours = goal.min_hours * (day_range / 7)
+            max_hours = goal.max_hours * (day_range / 7)
             
             hours_done = 0
             for day_data in days:
