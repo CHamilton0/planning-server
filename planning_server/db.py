@@ -20,14 +20,20 @@ class Database:
         self.goals_collection = client.database.goals
 
     def set_goal_times(self, data: list[dict[str, str | float]]) -> list[Goal]:
-        self.goals_collection.update_one({}, {'$set': {"goals": data}}, upsert=True)
+        self.goals_collection.update_one(
+            {}, {'$set': {"goals": data}}, upsert=True)
 
         goals: list[Goal] = []
         for item_dict in data:
             name = item_dict.get("name")
             min_hours = item_dict.get("min_hours")
             max_hours = item_dict.get("max_hours", None)
-            
+
+            assert isinstance(name, str)
+            assert isinstance(min_hours, float)
+            if max_hours is not None:
+                assert isinstance(max_hours, float)
+
             goals.append(Goal(name, min_hours, max_hours))
 
         return goals
@@ -45,7 +51,12 @@ class Database:
             name = item_dict.get("name")
             min_hours = item_dict.get("min_hours")
             max_hours = item_dict.get("max_hours", None)
-            
+
+            assert isinstance(name, str)
+            assert isinstance(min_hours, float)
+            if max_hours is not None:
+                assert isinstance(max_hours, float)
+
             goals.append(Goal(name, min_hours, max_hours))
 
         return goals
@@ -67,7 +78,7 @@ class Database:
         date_to_add = date_to_add.replace(
             hour=0, minute=0, second=0, microsecond=0)
 
-        result = {"day": date_to_add}
+        result: dict[str, datetime | float] = {"day": date_to_add}
         for field in data:
             result[field] = data[field]
 
